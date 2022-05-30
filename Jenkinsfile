@@ -23,6 +23,11 @@ pipeline {
          }
         }
       }
+      stage('Vulnerability Scan - Docker ') {
+      steps {
+        sh "mvn dependency-check:check"
+        }
+      }  
       
       stage('SonarQube - SAST') {
       steps {
@@ -53,6 +58,7 @@ pipeline {
         always {
           junit 'target/surefire-reports/*.xml'
           jacoco execPattern: 'target/jacoco.exec'
+          dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
         }
       }
   }
