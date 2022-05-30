@@ -18,8 +18,8 @@ pipeline {
       steps {
         withDockerRegistry([credentialsId: "docker", url: ""]) {
           sh 'printenv'
-          sh 'sudo docker build -t lakshit45/io:2 Dockerfile'
-          sh 'sudo docker push lakshit45/io:2'
+          sh 'sudo docker build -t lakshit45/io:2 .'
+          sh ' docker push lakshit45/io:2'
          }
         }
       }
