@@ -23,12 +23,20 @@ pipeline {
          }
         }
       }
-      stage('Vulnerability Scan - Docker ') {
-      steps {
-        sh "mvn dependency-check:check"
-        }
-      }  
       
+    
+     stage('Vulnerability Scan - Docker') {
+      steps {
+        parallel(
+          "Dependency Scan": {
+            sh "mvn dependency-check:check"
+          },
+          "Trivy Scan": {
+            sh "bash trivy-docker-image-scan.sh"
+          }
+        )
+      }
+    }  
       stage('SonarQube - SAST') {
       steps {
         withSonarQubeEnv('SonarQube') {
