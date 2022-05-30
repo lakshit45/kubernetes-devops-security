@@ -20,7 +20,7 @@ spec:
       - image: nginx
         name: devsecops-container
         securityContext:
-          runAsNonRoot: true
+     #     runAsNonRoot: true
           runAsUser: 100
           readOnlyRootFilesystem: true
 ---
