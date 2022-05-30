@@ -27,7 +27,7 @@ pipeline {
       stage('SonarQube - SAST') {
       steps {
         withSonarQubeEnv('SonarQube') {
-          sh "mvn sonar:sonar   -Dsonar.projectKey=lakshit -Dsonar.host.url=http://20.58.188.143:9000 
+          sh "mvn sonar:sonar   -Dsonar.projectKey=lakshit -Dsonar.host.url=http://20.58.188.143:9000 "
         }
         timeout(time: 2, unit: 'MINUTES') {
           script {
