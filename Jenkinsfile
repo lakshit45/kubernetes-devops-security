@@ -28,18 +28,18 @@ pipeline {
     }
 
 
- //   stage('SonarQube - SAST') {
-   //   steps {
-     //   withSonarQubeEnv('SonarQube') {
-       //   sh "mvn sonar:sonar       -Dsonar.projectKey=lakshit  -Dsonar.host.url=http://20.58.188.143:9000"
-    //    }
-      //  timeout(time: 2, unit: 'MINUTES') {
-        //  script {
-          //  waitForQualityGate abortPipeline: true
-       //   }
-     //   }
-    //  }
- //   }
+    stage('SonarQube - SAST') {
+      steps {
+        withSonarQubeEnv('SonarQube') {
+          sh "mvn sonar:sonar       -Dsonar.projectKey=lakshit  -Dsonar.host.url=http://20.58.188.143:9000"
+        }
+        timeout(time: 2, unit: 'MINUTES') {
+          script {
+            waitForQualityGate abortPipeline: true
+          }
+        }
+      }
+    }
 
     stage('Vulnerability Scan - Docker') {
       steps {
@@ -66,33 +66,27 @@ pipeline {
         }
       }
     }
-   // stage('Vulnerability Scan - Kubernetees') {
-     // steps {
-    //    sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-k8s-security.rego k8s_deployment_service.yaml'
-      //}
-   // }
-    
+    stage('Vulnerability Scan - Kubernetees') {
+      steps {
+        sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-k8s-security.rego k8s_deployment_service.yaml'
+      }
+    }
 
-    //stage('Vulnerability Scan - Kubernetes') {
-      //steps {
-      //  parallel(
+    stage('Vulnerability Scan - Kubernetes') {
+      steps {
+        parallel(
           //"OPA Scan": {
            // sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-k8s-security.rego k8s_deployment_service.yaml'
           //},
-       //   "Kubesec Scan": {
-     //       sh "bash kubesec-scan.sh"
-     //     }
-       // )
-      //}
-    //}
-     stage('Kubernetes Deployment - DEV') {
-      steps {
-        withKubeConfig([credentialsId: 'kubeconfig']) {
-          sh "sed -i 's#replace#siddharth67/numeric-app:${GIT_COMMIT}#g' k8s_deployment_service.yaml"
-          sh "kubectl apply -f k8s_deployment_service.yaml"
-        }
+          "Kubesec Scan": {
+            sh "bash kubesec-scan.sh"
+          }
+        )
       }
     }
+
+
+    
 
   }
 
