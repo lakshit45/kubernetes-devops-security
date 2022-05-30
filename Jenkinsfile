@@ -22,8 +22,17 @@ pipeline {
           sh 'docker push lakshit45/io:1'
          }
         }
-      } 
+      }
+      stage('Kubernetes Deployment - DEV') {
+      steps {
+        withKubeConfig([credentialsId: 'kubeconfig']) {
+          sh "sed -i 's#replace#siddharth67/numeric-app:${GIT_COMMIT}#g' k8s_deployment_service.yaml"
+          sh "kubectl apply -f k8s_deployment_service.yaml"
+        }
+      }
+    }
   }  
+     
    post {
         always {
           junit 'target/surefire-reports/*.xml'
