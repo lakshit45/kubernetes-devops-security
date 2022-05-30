@@ -23,11 +23,20 @@ pipeline {
          }
         }
       }
-       stage('SonarQube - SAST') {
+      
+      stage('SonarQube - SAST') {
       steps {
-        sh "mvn sonar:sonar   -Dsonar.projectKey=lakshit   -Dsonar.host.url=http://20.58.188.143:9000   -Dsonar.login=eee709ac591f2203606129db8b96a4a957579b2a"
+        withSonarQubeEnv('SonarQube') {
+          sh "mvn sonar:sonar   -Dsonar.projectKey=lakshit -Dsonar.host.url=http://20.58.188.143:9000 
+        }
+        timeout(time: 2, unit: 'MINUTES') {
+          script {
+            waitForQualityGate abortPipeline: true
+          }
+        }
       }
     }
+
 
      
       stage('Kubernetes Deployment - DEV') {
