@@ -14,6 +14,14 @@ pipeline {
                 sh "mvn test"
            }
        }
+      stage('Docker Build and Push') {
+      steps {
+        withDockerRegistry([credentialsId: "docker", url: ""]) {
+          sh 'printenv'
+          sh 'docker build -t lakshit45/io:1 .'
+          sh 'docker push lakshit45/io:1'
+         }
+       }
   }  
    post {
         always {
