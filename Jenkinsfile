@@ -71,6 +71,7 @@ pipeline {
         sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-k8s-security.rego k8s_deployment_service.yaml'
       }
     }
+    
 
     stage('Vulnerability Scan - Kubernetes') {
       steps {
@@ -84,9 +85,14 @@ pipeline {
         )
       }
     }
-
-
-    
+    stage('Kubernetes Deployment - DEV') {
+      steps {
+        withKubeConfig([credentialsId: 'kubeconfig']) {
+          sh "sed -i 's#replace#siddharth67/numeric-app:${GIT_COMMIT}#g' k8s_deployment_service.yaml"
+          sh "kubectl apply -f k8s_deployment_service.yaml"
+        }
+      }
+    }  
 
   }
 
