@@ -42,12 +42,12 @@ pipeline {
     stage('Vulnerability Scan - Docker') {
       steps {
         parallel(
-          //"Dependency Scan": {
-            //sh "mvn dependency-check:check"
-          //},
+          "Dependency Scan": {
+            sh "mvn dependency-check:check"
+          },
           //"Trivy Scan": {
             //sh "bash trivy-docker-image-scan.sh"
-          //},
+         // },
           "OPA Conftest": {
             sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-docker-security.rego Dockerfile'
           }
@@ -57,7 +57,7 @@ pipeline {
 
     stage('Docker Build and Push') {
       steps {
-        withDockerRegistry([credentialsId: "docker-hub", url: ""]) {
+        withDockerRegistry([credentialsId: "docker, url: ""]) {
           sh 'printenv'
           sh 'sudo docker build -t siddharth67/numeric-app:""$GIT_COMMIT"" .'
           sh 'docker push siddharth67/numeric-app:""$GIT_COMMIT""'
