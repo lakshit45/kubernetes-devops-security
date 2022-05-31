@@ -44,9 +44,9 @@ pipeline {
     stage('Vulnerability Scan - Docker') {
       steps {
         parallel(
-      //    "Dependency Scan": {
-    //        sh "mvn dependency-check:check"
-       //   },
+          "Dependency Scan": {
+           sh "mvn dependency-check:check"
+          },
           "Trivy Scan": {
            sh "bash trivy-docker-image-scan.sh"
           },
@@ -84,6 +84,7 @@ pipeline {
       steps {
         withKubeConfig([credentialsId: 'kubeconfig']) {
           sh "kubectl apply -f k8s_deployment_service.yaml"
+          echo $BUILD
         }
       }
     }
