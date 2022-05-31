@@ -84,7 +84,7 @@ pipeline {
       steps {
         withKubeConfig([credentialsId: 'kubeconfig']) {
           sh "kubectl apply -f k8s_deployment_service.yaml"
-          echo $BUILD
+          echo "$BUILD_NUMBER"
         }
       }
     }
