@@ -13,7 +13,7 @@ docker run --rm -v $WORKSPACE:/root/.cache/ aquasec/trivy:0.17.2 -q image --exit
     echo "Exit Code : $exit_code"
 
     # Check scan results
-    if [[ "${exit_code}" == 1 ]]; then
+    if [[ "${exit_code}" == 12 ]]; then
         echo "Image scanning failed. Vulnerabilities found"
         exit 1;
     else
