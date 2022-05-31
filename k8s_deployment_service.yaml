@@ -19,10 +19,10 @@ spec:
       containers:
       - image: coolgourav147/nginx-custom
         name: devsecops-container
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: 100
-          readOnlyRootFilesystem: true
+      ##  securityContext:
+        ##  runAsNonRoot: true
+        ##  runAsUser: 100
+        ##  readOnlyRootFilesystem: true
 ---
 apiVersion: v1
 kind: Service
