@@ -92,7 +92,7 @@ pipeline {
         //  "Deployment": {
           //  withKubeConfig([credentialsId: 'kubeconfig']) {
         //      sh "bash k8s-deployment.sh"
-            }
+           // }
        //   },
          // "Rollout Status": {
         //    withKubeConfig([credentialsId: 'kubeconfig']) {
