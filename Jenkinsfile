@@ -89,6 +89,7 @@ pipeline {
           echo "$BUILD_NUMBER"
         }
       }
+    }
     
     stage('Prompte to PROD?') {
       steps {
@@ -96,6 +97,7 @@ pipeline {
           input 'Do you want to Approve the Deployment to Production Environment/Namespace?'
         }
       }
+    } 
     
 
     stage('K8S CIS Benchmark') {
@@ -133,7 +135,7 @@ pipeline {
           }
         )
       }
-  }
+    }
 
   post {
     always {
