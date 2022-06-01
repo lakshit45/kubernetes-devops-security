@@ -63,12 +63,15 @@ pipeline {
 
           parallel(
             "Master": {
+              sh "cd"
               sh "bash cis-master.sh"
             },
             "Etcd": {
+              sh "cd"
               sh "bash cis-etcd.sh"
             },
             "Kubelet": {
+              sh "cd"
               sh "bash cis-kubelet.sh"
             }
           )
