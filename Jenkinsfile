@@ -3,12 +3,12 @@
 pipeline {
   agent any
 
-  environment {
+   environment {
     deploymentName = "devsecops"
     containerName = "devsecops-container"
     serviceName = "devsecops-svc"
     imageName = "siddharth67/numeric-app:${GIT_COMMIT}"
-    applicationURL = "http://devsecops-demo.eastus.cloudapp.azure.com/"
+    applicationURL = "http://devsecops.australiaeast.cloudapp.azure.com" 
     applicationURI = "/increment/99"
   }
 
@@ -111,8 +111,33 @@ pipeline {
         }
       }
     }
+    stage('Prompte to PROD?') {
+      steps {
+        timeout(time: 2, unit: 'DAYS') {
+          input 'Do you want to Approve the Deployment to Production Environment/Namespace?'
+        }
+      }
+    }
 
+    stage('K8S CIS Benchmark') {
+      steps {
+        script {
 
+          parallel(
+            "Master": {
+              sh "bash cis-master.sh"
+            },
+            "Etcd": {
+              sh "bash cis-etcd.sh"
+            },
+            "Kubelet": {
+              sh "bash cis-kubelet.sh"
+            }
+          )
+
+        }
+      }
+   
     
 
   }
