@@ -1,7 +1,7 @@
 #!/bin/bash
 #cis-kubelet.sh
 
-total_fail=$(./kube-bench run --targets node  --version 1.15 --check 4.2.1,4.2.2 --json | jq .[].total_fail)
+total_fail=$( sudo ./kube-bench --config-dir `pwd`/cfg --config `pwd`/cfg/config.yaml run --targets etcd  --version 1.15 --check 2.2 )
 
 if [[ "$total_fail" -ne 0 ]];
         then
