@@ -81,7 +81,7 @@ pipeline {
        //   },
        //   "Trivy Scan": {
        //     sh "bash trivy-k8s-scan.sh"
-         // }
+            }
         )
       }
     }
