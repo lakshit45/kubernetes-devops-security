@@ -57,28 +57,7 @@ pipeline {
         )
       }
     }
-    stage('K8S CIS Benchmark') {
-      steps {
-        script {
-
-          parallel(
-            "Master": {
-              sh "cd"
-              sh "bash cis-master.sh"
-            },
-            "Etcd": {
-              sh "cd"
-              sh "bash cis-etcd.sh"
-            },
-            "Kubelet": {
-              sh "cd"
-              sh "bash cis-kubelet.sh"
-            }
-          )
-
-        }
-      }
-    }
+   
 
     stage('Docker Build and Push') {
       steps {
@@ -136,6 +115,22 @@ pipeline {
           )
 
         }
+      }
+      stage('K8S Deployment - PROD') {
+      steps {
+        parallel(
+          "Deployment": {
+            withKubeConfig([credentialsId: 'kubeconfig']) {
+              sh "sed -i 's#replace#${imageName}#g' k8s_PROD-deployment_service.yaml"
+              sh "kubectl -n name apply -f k8s_PROD-deployment_service.yaml"
+            }
+          },
+          "Rollout Status": {
+            withKubeConfig([credentialsId: 'kubeconfig']) {
+              sh "bash k8s-PROD-deployment-rollout-status.sh"
+            }
+          }
+        )
       }
    
     
