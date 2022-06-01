@@ -3,12 +3,12 @@
 pipeline {
   agent any
 
-   environment {
+  environment {
     deploymentName = "devsecops"
     containerName = "devsecops-container"
     serviceName = "devsecops-svc"
     imageName = "siddharth67/numeric-app:${GIT_COMMIT}"
-    applicationURL = "http://devsecops.australiaeast.cloudapp.azure.com" 
+    applicationURL = "http://devsecops.australiaeast.cloudapp.azure.com"
     applicationURI = "/increment/99"
   }
 
@@ -24,21 +24,23 @@ pipeline {
     stage('Unit Tests - JUnit and JaCoCo') {
       steps {
         sh "mvn test"
-        sh "pwd"
       }
     }
 
+  
 
   //  stage('SonarQube - SAST') {
-   //   steps {
-     //   withSonarQubeEnv('SonarQube') {
-       //   sh "mvn sonar:sonar       -Dsonar.projectKey=lakshit  -Dsonar.host.url=http://20.58.188.143:9000"
-      //  }
+    //  steps {
+      //  withSonarQubeEnv('SonarQube') {
+        //  sh "mvn sonar:sonar \
+		//              -Dsonar.projectKey=numeric-application \
+		  //            -Dsonar.host.url=http://devsecops-demo.eastus.cloudapp.azure.com:9000"
+    //    }
     //    timeout(time: 2, unit: 'MINUTES') {
-      //    script {
-        //    waitForQualityGate abortPipeline: true
-          //}
-   //     }
+      //   script {
+       //     waitForQualityGate abortPipeline: true
+         // }
+     //   }
      // }
    // }
 
@@ -46,10 +48,10 @@ pipeline {
       steps {
         parallel(
           "Dependency Scan": {
-           sh "mvn dependency-check:check"
+            sh "mvn dependency-check:check"
           },
           "Trivy Scan": {
-           sh "bash trivy-docker-image-scan.sh"
+            sh "bash trivy-docker-image-scan.sh"
           },
           "OPA Conftest": {
             sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-docker-security.rego Dockerfile'
@@ -57,7 +59,6 @@ pipeline {
         )
       }
     }
-   
 
     stage('Docker Build and Push') {
       steps {
@@ -68,37 +69,48 @@ pipeline {
         }
       }
     }
-    
 
     stage('Vulnerability Scan - Kubernetes') {
       steps {
         parallel(
           "OPA Scan": {
             sh 'docker run --rm -v $(pwd):/project openpolicyagent/conftest test --policy opa-k8s-security.rego k8s_deployment_service.yaml'
-           },
+          },
           "Kubesec Scan": {
             sh "bash kubesec-scan.sh"
+       //   },
+       //   "Trivy Scan": {
+       //     sh "bash trivy-k8s-scan.sh"
+         // }
+        )
+      }
+    }
+
+    stage('K8S Deployment - DEV') {
+      steps {
+        parallel(
+          "Deployment": {
+            withKubeConfig([credentialsId: 'kubeconfig']) {
+              sh "bash k8s-deployment.sh"
+            }
+       //   },
+         // "Rollout Status": {
+        //    withKubeConfig([credentialsId: 'kubeconfig']) {
+          //    sh "bash k8s-deployment-rollout-status.sh"
+         //   }
           }
         )
       }
     }
-    stage('Kubernetes Deployment - DEV') {
-      steps {
-        withKubeConfig([credentialsId: 'kubeconfig']) {
-          sh "kubectl apply -f k8s_deployment_service.yaml"
-          echo "$BUILD_NUMBER"
-        }
-      }
-    }
-    
+
+
     stage('Prompte to PROD?') {
       steps {
         timeout(time: 2, unit: 'DAYS') {
           input 'Do you want to Approve the Deployment to Production Environment/Namespace?'
         }
       }
-    } 
-    
+    }
 
     stage('K8S CIS Benchmark') {
       steps {
@@ -119,15 +131,42 @@ pipeline {
         }
       }
     }
-    
+
+    stage('K8S Deployment - PROD') {
+      steps {
+        parallel(
+          "Deployment": {
+            withKubeConfig([credentialsId: 'kubeconfig']) {
+              sh "sed -i 's#replace#${imageName}#g' k8s_PROD-deployment_service.yaml"
+              sh "kubectl -n prod apply -f k8s_PROD-deployment_service.yaml"
+            }
+          },
+          "Rollout Status": {
+            withKubeConfig([credentialsId: 'kubeconfig']) {
+              sh "bash k8s-PROD-deployment-rollout-status.sh"
+            }
+          }
+        )
+      }
+    }
+
+    // stage('Testing Slack') {
+    //    steps {
+    //        sh 'exit 1'
+    //    }
+    //  }
+
+  }
 
   post {
     always {
       junit 'target/surefire-reports/*.xml'
       jacoco execPattern: 'target/jacoco.exec'
+      pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
       dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
-      
-      // Use sendNotifications.groovy from shared library and provide current build result as parameter    
+      publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'owasp-zap-report', reportFiles: 'zap_report.html', reportName: 'OWASP ZAP HTML Report', reportTitles: 'OWASP ZAP HTML Report'])
+
+      //Use sendNotifications.groovy from shared library and provide current build result as parameter 
       sendNotification currentBuild.result
     }
 
@@ -140,5 +179,4 @@ pipeline {
     // }
   }
 
- }
 }
