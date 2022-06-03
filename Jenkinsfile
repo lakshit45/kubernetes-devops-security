@@ -1,5 +1,5 @@
 @Library('slack') _
-
+//this is a library we createed  to send notification to slack 
 pipeline {
   agent any
 
