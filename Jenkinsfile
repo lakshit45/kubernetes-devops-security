@@ -197,7 +197,7 @@ pipeline {
       steps {
         script {
           try {
-            withKubeConfig([credentialsId: 'kuubeconfig']) {
+            withKubeConfig([credentialsId: 'kubeconfig']) {
               sh "bash integration-test-PROD.sh"
             }
           } catch (e) {
