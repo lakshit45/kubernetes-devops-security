@@ -8,7 +8,7 @@ pipeline {
     containerName = "devsecops-container"
     serviceName = "devsecops-svc"
     imageName = "siddharth67/numeric-app:${GIT_COMMIT}"
-    applicationURL = "http://devsecops.australiaeast.cloudapp.azure.com"
+    applicationURL = "http://20.58.188.143"
     applicationURI = "/increment/99"
   }
 
@@ -149,6 +149,23 @@ pipeline {
         )
       }
     }
+    stage('Integration Tests - PROD') {
+      steps {
+        script {
+          try {
+            withKubeConfig([credentialsId: 'kubeconfig']) {
+              sh "bash integration-test-PROD.sh"
+            }
+          } catch (e) {
+            withKubeConfig([credentialsId: 'kubeconfig']) {
+              sh "kubectl -n name rollout undo deploy ${deploymentName}"
+            }
+            throw e
+          }
+        }
+      }
+    }	  
+	  
 
     // stage('Testing Slack') {
     //    steps {
